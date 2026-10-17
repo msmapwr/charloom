@@ -31,6 +31,63 @@ public sealed class GeometryEditingTests(CliFixture fixture, ITestOutputHelper d
         return path;
     }
     [Fact]
+    public async Task ClearGeometryHistoryRetainsDraftCandidateArtworkSelectionAndPendingProtection()
+    {
+        var path = await Image(); var original = await File.ReadAllBytesAsync(path);
+        Assert.Equal(0, await Run("edit", "replace", "--project", path, "--text", "manual"));
+        using (var session = await ProjectEditSession.Open(path))
+        { await session.Select(new(0, 0, 0, 2), default); }
+        Assert.Equal(0, await Run("geometry", "set", "--project", path, "--set", "geometry.QuarterTurns=1"));
+        Assert.Equal(0, await Run("candidate", "create", "--project", path));
+        Assert.Equal(0, await Run("geometry", "reset", "--project", path));
+        Assert.Equal(0, await Run("geometry", "undo", "--project", path));
+        EditState before;
+        using (var session = await ProjectEditSession.Open(path)) before = session.State;
+        var manifest = Unique(".workspace.json");
+        Assert.Equal(0, await Run("workspace", "open", "--workspace", manifest, "--project", path));
+        Assert.Equal(0, await Run("geometry", "clear", "--workspace", manifest));
+        using (var session = await ProjectEditSession.Open(path))
+        {
+            Assert.Equal(new ImageGeometry(QuarterTurns: 1), session.DraftGeometry);
+            Assert.True(session.GeometryPending); Assert.True(session.Dirty);
+            Assert.Single(session.State.GeometryHistory!.Revisions); Assert.Equal(0, session.State.GeometryHistory.Index);
+            Assert.Equal(JsonSerializer.Serialize(before.Revisions), JsonSerializer.Serialize(session.State.Revisions)); Assert.Equal(before.Selection, session.State.Selection);
+            Assert.Equal(before.Candidate!.Text, session.State.Candidate!.Text); Assert.Equal(before.CandidateGeometry, session.State.CandidateGeometry);
+        }
+        var state = await File.ReadAllBytesAsync(ProjectEditSession.StatePath(path));
+        Assert.Equal(2, await Run("geometry", "undo", "--project", path));
+        Assert.Equal(2, await Run("geometry", "redo", "--project", path));
+        Assert.Equal(state, await File.ReadAllBytesAsync(ProjectEditSession.StatePath(path)));
+        Assert.Equal(original, await File.ReadAllBytesAsync(path));
+        Assert.Equal(2, await Run("workspace", "close", "--workspace", manifest));
+        Assert.Equal(0, await Run("geometry", "clear", "--project", path));
+        Assert.Equal(state, await File.ReadAllBytesAsync(ProjectEditSession.StatePath(path)));
+    }
+    [Fact]
+    public async Task ClearRejectsNonImagesAndExternalChangesWithoutWritingState()
+    {
+        var text = Unique(".asciiproj");
+        Assert.Equal(0, await Run("text", "--text", "abc", "--save-project", text));
+        Assert.Equal(2, await Run("geometry", "clear", "--project", text));
+        Assert.False(File.Exists(ProjectEditSession.StatePath(text)));
+        var path = await Image();
+        Assert.Equal(0, await Run("geometry", "set", "--project", path, "--set", "geometry.QuarterTurns=1"));
+        var state = await File.ReadAllBytesAsync(ProjectEditSession.StatePath(path));
+        await File.AppendAllTextAsync(path, " ");
+        Assert.Equal(4, await Run("geometry", "clear", "--project", path));
+        Assert.Equal(state, await File.ReadAllBytesAsync(ProjectEditSession.StatePath(path)));
+    }
+    [Theory]
+    [InlineData("zh-CN")]
+    [InlineData("en-US")]
+    public async Task ClearHelpIsAvailableInBothLanguages(string language)
+    {
+        using var output = new StringWriter(); using var error = new StringWriter();
+        Assert.Equal(0, await CliHost.Run(["geometry", "clear", "--help", "--language", language], output, error, new StringReader("")));
+        Assert.Contains("geometry clear", output.ToString()); Assert.Contains("--project", output.ToString());
+        Assert.Contains(language == "zh-CN" ? "保留" : "keep", output.ToString()); Assert.Equal("", error.ToString());
+    }
+    [Fact]
     public async Task DraftHistoryPersistsAndBranchesWithoutChangingArtworkOrCandidate()
     {
         var path = await Image(); var original = await File.ReadAllBytesAsync(path);

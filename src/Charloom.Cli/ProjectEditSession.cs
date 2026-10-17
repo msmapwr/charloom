@@ -190,6 +190,12 @@ public sealed class ProjectEditSession : IDisposable
         State = State with { GeometryHistory = history with { Index = history.Index + (redo ? 1 : -1) } };
         await Persist(token);
     }
+    public async Task ClearGeometryHistory(CancellationToken token)
+    {
+        _ = ImageHistory();
+        State = State with { Schema = 3, GeometryHistory = new([DraftGeometry], 0) };
+        await Persist(token);
+    }
     public async Task SetCandidate(AsciiDocument document, bool replace, CancellationToken token, ImageGeometry? geometry = null)
     {
         if (State.Candidate is not null && !replace) throw new CliConflictException("Candidate already exists; explicit --replace-candidate required.");

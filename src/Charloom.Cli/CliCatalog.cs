@@ -75,6 +75,7 @@ public static class CliCatalog
         new("candidate save", "候选另存项目，保留来源与参数；不改变active、手工结果或候选", "Save independent candidate project with source/parameters; active, edits and candidate unchanged", [Project, Output, Overwrite], "candidate save --project work.asciiproj --output candidate.asciiproj", []),
         new("candidate discard", "只丢弃候选，保留手工结果与撤销历史", "Discard only candidate, retaining current edits and undo history", [Project], "candidate discard --project work.asciiproj", []),
         new("geometry status", "查询图片几何草稿、已应用参数和40步独立历史；不改作品", "Inspect image draft/applied geometry and independent 40-step history; artwork unchanged", [Project], "geometry status --project photo.asciiproj", []),
+        new("geometry clear", "清除几何撤销与重做历史；保留当前草稿、作品及候选", "Clear geometry undo/redo history; keep current draft, artwork and candidate", [Project], "geometry clear --project photo.asciiproj", []),
         new("geometry set", "修改裁剪／旋转／翻转草稿；JSON叠加当前值，set优先；生成使用candidate create", "Update crop/rotation/flip draft; JSON merges current values, set wins; generate with candidate create", [Project, Set,
             O("geometry", "PATH", "严格几何JSON，未指定字段保留；set须使用geometry.前缀", "Strict geometry JSON; omitted fields kept; set requires geometry. prefix")],
             "geometry set --project photo.asciiproj --set geometry.QuarterTurns=1", [typeof(ImageGeometry)]),
@@ -147,7 +148,7 @@ public static class CliCatalog
     public static bool Chinese(CliArguments args) => args.Get("language", "system") switch { "zh-CN" => true, "en-US" => false, _ => CultureInfo.CurrentUICulture.Name.StartsWith("zh", StringComparison.OrdinalIgnoreCase) };
     public static string Help(CliArguments args)
     {
-        var zh = Chinese(args); var b = new StringBuilder("Charloom CLI 1.0.0-alpha.6\n\n");
+        var zh = Chinese(args); var b = new StringBuilder("Charloom CLI 1.0.0-alpha.7\n\n");
         b.AppendLine(zh ? "字织 · 离线 ASCII / ANSI 字符艺术创作工具\n把字符织成画面\n" : "Offline ASCII / ANSI art studio\nWeave characters into art\n");
         var exact = Commands.FirstOrDefault(c => c.Name == args.Command);
         b.AppendLine(zh ? "用法：charloom-cli <命令> [选项]" : "Usage: charloom-cli <command> [options]");
