@@ -5,7 +5,9 @@ const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const themeNames = { system: "跟随系统", light: "浅色", dark: "深色" };
 let preference = "system";
 try {
-    const saved = localStorage.getItem("charloom-theme") ?? localStorage.getItem("asciistudio-theme");
+    const saved =
+        localStorage.getItem("charloom-theme") ??
+        localStorage.getItem("asciistudio-theme");
     if (Object.hasOwn(themeNames, saved)) preference = saved;
 } catch {
     /* Storage can be unavailable in private or embedded browsing. */
@@ -253,6 +255,11 @@ async function loadFluent() {
     }
 }
 void loadFluent();
+import("./motion.js")
+    .then(({ initMotion }) => initMotion())
+    .catch(() => {
+        root.dataset.motion = "unavailable";
+    });
 const cliIndex = /** @type {HTMLDetailsElement} */ (
     document.querySelector(".cli-index details")
 );
