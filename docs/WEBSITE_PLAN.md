@@ -220,3 +220,17 @@ Small 拆分：1. 保存指定文档的网站快照，生成 XML 章节和静态
 按用户确认，本轮 Small 只更新网站品牌，网站版本为 0.13.1。英文 Charloom、中文字织，主标题“把字符织成画面”，副标题“图片与文字的字符画创作工具”。导航与页脚采用两行字标，在手机上保持紧凑；网站 SVG 字符网格图标独立于桌面应用 Logo。
 
 页面标题、社交信息与无障碍名称同步更新。现有截图、安装包、可执行文件、CLI 命令、仓库地址和软件版本记录沿用 Charloom，首页注明 Windows 程序当前的名称。
+
+## 网站 0.14.0：GSAP 动效（Medium，2026-10-17）
+
+按既有“全部推荐”授权，六项设计决定采用默认方案：1. 首页承担主要视觉叙事，其他页按组进入；2. Fluent 紫色、现有文字与真实素材保留；3. 桌面较完整、手机轻量；4. 保留原生滚动与滑块，不强制吸附；5. 减少动态效果和高对比度时完全停止 GSAP 编排；6. GSAP 与 ScrollTrigger 本地固定版本，验证后直接合并 main 并更新 Pages，不创建 PR。
+
+Small 拆分：动画编排与旧效果替换；交互清理、失败回退和浏览器验证；网站版本与发布文档。标题“织”通过逐字错位成形和字符纹理表达，截图透视是主要视觉焦点，阅读区保持稳定。GSAP 仅处理 transform 与 opacity；动态日志、代码和滑块保持原生交互。HTML 默认可见，脚本失败时继续使用。
+
+参考 GreenSock 官方技能源：
+- https://github.com/greensock/gsap-skills/blob/main/skills/gsap-core/SKILL.md
+- https://github.com/greensock/gsap-skills/blob/main/skills/gsap-timeline/SKILL.md
+- https://github.com/greensock/gsap-skills/blob/main/skills/gsap-scrolltrigger/SKILL.md
+- https://github.com/greensock/gsap-skills/blob/main/skills/gsap-performance/SKILL.md
+
+本次直接读取技能源并应用指导；未安装技能。动画文件从官方 npm gsap@3.15.0 分发包提取，保留原有许可头。

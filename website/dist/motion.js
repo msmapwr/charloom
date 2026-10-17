@@ -70,8 +70,8 @@ export async function initMotion() {
                     intro.from(
                         ".motion-letter",
                         {
-                            yPercent: 105,
-                            rotation: 6,
+                            yPercent: (index) => (index % 2 ? -110 : 110),
+                            rotation: (index) => (index % 2 ? -6 : 6),
                             opacity: 0,
                             stagger: 0.045,
                             clearProps: "all",
@@ -115,7 +115,7 @@ export async function initMotion() {
                     intro.from(
                         threads,
                         {
-                            x: 70,
+                            x: (index) => (index % 2 ? -70 : 70),
                             opacity: 0,
                             stagger: 0.06,
                             duration: 1.2,
