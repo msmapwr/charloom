@@ -1,6 +1,6 @@
 # Charloom 命令行详细教程
 
-适用版本：**1.0.0-alpha.6**，Windows x64／ARM64。教程使用 PowerShell。命令功能与参数以当前程序的 `--help` 为准；[覆盖表](CLI.md)列出尚未实现的桌面功能。
+适用版本：**1.0.0-alpha.7**，Windows x64／ARM64。教程使用 PowerShell。命令功能与参数以当前程序的 `--help` 为准；[覆盖表](CLI.md)列出尚未实现的桌面功能。
 
 ## 目录
 
@@ -147,7 +147,7 @@ CLI 使用严格 UTF-8 stdin，stdout 不主动补换行。由于外层 shell �
 & $cli image --input photo.png --columns 120 --output photo.txt --save-project photo.asciiproj
 ```
 
-`--columns` 是字符列数，范围 8–2000，默认 120。默认 `Rows=0`，按照原图比例与所选字体的实测宽高比推导行数。字符通常不是正方形，默认补偿可减少图像变形。
+`--columns` 是字符列数，范围 8–200000，默认 120；输出同时受总采样点预算限制。默认 `Rows=0`，按照原图比例与所选字体的实测宽高比推导行数。字符通常不是正方形，默认补偿可减少图像变形。
 
 固定行列会拉伸到指定网格，仅在有明确目标格数时使用：
 
@@ -226,6 +226,24 @@ CLI 使用严格 UTF-8 stdin，stdout 不主动补换行。由于外层 shell �
 优先级是：明确命令参数／`--set` ＞ JSON 文件中的字段 ＞项目保存参数＞默认值。JSON 未提供的字段不会重置已有项目参数。未知字段、非法枚举和 `NaN` 等非有限数值会报错。
 
 几何参数另放 `geometry.json`，使用 `--geometry geometry.json`；不要把几何字段混入图片质量 JSON。
+
+### 几何草稿与独立撤销（alpha.7 源码）
+
+以下命令要求使用含有原图的 `photo.asciiproj`。修改草稿保留当前作品；通过候选生成、预览和接受后再保存。
+
+```powershell
+& $cli geometry set --project photo.asciiproj --set geometry.QuarterTurns=1
+& $cli geometry status --project photo.asciiproj
+& $cli geometry undo --project photo.asciiproj
+& $cli geometry redo --project photo.asciiproj
+& $cli geometry clear --project photo.asciiproj
+& $cli candidate create --project photo.asciiproj
+& $cli candidate show --project photo.asciiproj --format PNG --output rotated-preview.png
+& $cli candidate accept --project photo.asciiproj
+& $cli project save --project photo.asciiproj --overwrite
+```
+
+`clear` 仅清除几何撤销／重做，保留当前草稿、作品、选区和候选；`reset` 则将草稿恢复到完整原图。几何历史与结果历史独立，当前最多 40 步。未应用草稿仍受关闭保护。候选会保存生成时的参数，之后修改草稿不会改变已有候选。更多行为见 [几何历史说明](https://github.com/msmapwr/charloom/blob/main/docs/CLI_GEOMETRY.md)。
 
 ## 5. 文字转换、中文与字体
 
@@ -434,7 +452,7 @@ FIGlet 字体名或 ID 来自 `fonts list`，不要把系统字体名当作 FIGl
 & $cli history undo --project hello.asciiproj
 ```
 
-文本原样读取，8 MB上限；图片40 MB／8000万像素。保存默认不覆盖；占用错误 code 为 clipboard_busy，释放剪贴板后可重试；内容格式错误为 clipboard_format。--selection 需要已有选区。没有 --apply 时不读取剪贴板或改项目。
+文本原样读取，8 MB上限；图片100 MB／2亿像素。保存默认不覆盖；占用错误 code 为 clipboard_busy，释放剪贴板后可重试；内容格式错误为 clipboard_format。--selection 需要已有选区。没有 --apply 时不读取剪贴板或改项目。
 
 ## 9. 多项目工作区与恢复
 
@@ -457,7 +475,7 @@ alpha.3 提供一个独立候选槽，使用项目已保存的来源与参数生
 
 未接受的候选也需要保留：默认关闭项目会取消；`--action keep` 留下恢复记录。`--action save --overwrite` 保存当前编辑，不自动接受候选，并保留候选恢复记录。
 
-候选也受侧文件 100 MB 总预算约束。新的 schema 2 能读取 alpha.2 的 schema 1；修改后使用 alpha.3 或更新 CLI，旧 CLI 不支持新侧文件。`.asciiproj` 格式仍兼容桌面端；桌面不会自动读取 CLI 侧文件。
+候选也受侧文件 256 MB 总预算约束。当前支持读取 schema 1/2/3；图片状态写入 schema 3，修改后须使用支持该格式的 CLI，旧 CLI 不支持新侧文件。`.asciiproj` 格式仍兼容桌面端；桌面不会自动读取 CLI 侧文件。
 
 ### 打开、切换与隔离
 
@@ -649,6 +667,9 @@ Ctrl+C 取消任务。为避免半个文件，写入通常通过同目录临时�
 
 ```powershell
 & $cli settings show --json
+& $cli settings list --search "font appearance" --language en-US
+& $cli settings favorite --key Theme --enabled true
+& $cli settings list --favorites
 & $cli settings set --set Theme=Light --set PreviewZoom=1.5 --set BeginnerMode=true
 & $cli settings export --output preferences.json
 & $cli settings import --input preferences.json
@@ -656,6 +677,8 @@ Ctrl+C 取消任务。为避免半个文件，写入通常通过同目录临时�
 ```
 
 主题、动画、窗口和新手模式等是保存的偏好，**不会给终端创建图形界面**。CLI 显示／导出参数仍以各命令为准，例如位图字号使用 `--font-size`，不是把 `PreviewFontSize` 当作导出字号。设置会按桌面相同规则归一化；导出不含最近项目路径，重置／导入保留已有最近路径。
+
+设置搜索支持中文／英文名称、分类和稳定键，多词同时匹配。收藏通过 `settings favorite --key NAME` 切换；显式 `--enabled true/false` 可重复执行。收藏随偏好导出和导入，重置时清空。详见 [设置搜索与迁移](https://github.com/msmapwr/charloom/blob/main/docs/SETTINGS.md)。
 
 明确操作桌面偏好：
 
@@ -693,6 +716,6 @@ CLI 工作区清单仍独立保存，不会变成桌面标签。`--desktop-data`
 | 摘要无法还原 | 正常：哈希／校验／NFC／NFKC 不可逆；需要还原选择可逆方法 |
 | JSON 导出不能当项目打开 | 使用转换的 `--save-project` 或 `project save`；作品 JSON 与项目格式不同 |
 
-资源边界：图片输入 40 MB／8000 万像素，文本输入 8 MB，ANSI 4 MB；算法自身的更低限制仍生效，例如加密编码通常输入 1 MB、还原输入 4 MB。作品网格最多 400 万列位；图像导出最多 4000 万像素且每边不超过 32767，HTML／SVG 标记最多 1600 万字符。侧文件 100 MB、历史 100 步／64 MB、工作区 32 项。
+资源边界：图片输入 100 MB／2 亿源像素，处理图等比缩至最长边 12000 且最多 1600 万像素；GIF 仅转换首帧。文本输入 8 MB，ANSI 4 MB；算法自身的更低限制仍生效，例如加密编码通常输入 1 MB、还原输入 4 MB。作品网格最多 4000 万列位；图片转换还受 4000 万采样点限制，Braille 每格占 8 点、半块每格占 2 点。位图导出最多 1 亿像素且每边不超过 32767，HTML／SVG 标记最多 1.6 亿字符。侧文件 256 MB、结果历史 100 步／64 MB、几何历史 40 步、工作区 32 项。
 
-当前没有独立 CLI 原图对比／视图控制、几何历史、代码变量包装等入口，也没有终端交互编辑器。动画／摄像头／3D 继续冻结。用 `capabilities --json` 查询实际支持能力，不把计划中的命令当成已实现功能。
+源码 Unreleased 新增 [CLI 几何历史](https://github.com/msmapwr/charloom/blob/main/docs/CLI_GEOMETRY.md)，包含草稿、独立撤销与候选应用流程。当前没有独立 CLI 原图对比／视图控制、代码变量包装等入口，也没有终端交互编辑器。动画／摄像头／3D 继续冻结。用 `capabilities --json` 查询实际支持能力，不把计划中的命令当成已实现功能。

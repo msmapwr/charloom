@@ -29,6 +29,22 @@ $taskText=Invoke-StudioCli @('text','--text','abc')
 if ($taskText -notlike '*_*') { throw 'FIGlet CLI produced no expected output.' }
 $taskCapabilities=Invoke-StudioCli @('capabilities','--json') | ConvertFrom-Json
 if ($taskCapabilities.result.desktopParityComplete -ne $false -or !$taskCapabilities.result.pending.Count) { throw 'Prerelease parity status is inaccurate.' }
+if ($taskCapabilities.result.commands -contains 'geometry clear') {
+    Add-Type -AssemblyName System.Drawing
+    New-Item -ItemType Directory -Force $taskData | Out-Null
+    $taskImage=Join-Path $taskData 'geometry-source.png'
+    $taskBitmap=[Drawing.Bitmap]::new(16,8)
+    try { $taskBitmap.Save($taskImage,[Drawing.Imaging.ImageFormat]::Png) } finally { $taskBitmap.Dispose() }
+    $taskGeometryProject=Join-Path $taskData 'geometry-smoke.asciiproj'
+    Invoke-StudioCli @('image','--input',$taskImage,'--columns','20','--save-project',$taskGeometryProject) | Out-Null
+    $taskOriginalHash=(Get-FileHash -LiteralPath $taskGeometryProject).Hash
+    Invoke-StudioCli @('geometry','set','--project',$taskGeometryProject,'--set','geometry.QuarterTurns=1') | Out-Null
+    Invoke-StudioCli @('geometry','clear','--project',$taskGeometryProject) | Out-Null
+    $taskGeometry=Invoke-StudioCli @('geometry','status','--project',$taskGeometryProject) | ConvertFrom-Json
+    if ($taskGeometry.result.count -ne 1 -or $taskGeometry.result.current.QuarterTurns -ne 1 -or !$taskGeometry.result.pending -or $taskGeometry.result.canUndo -or $taskGeometry.result.canRedo) { throw 'Geometry clear lost the draft or retained history.' }
+    if ((Get-FileHash -LiteralPath $taskGeometryProject).Hash -ne $taskOriginalHash) { throw 'Geometry clear changed the original project.' }
+    Write-Output 'PASS cross-process geometry clear preserves draft and original project'
+}
 if ($taskCapabilities.result.complete -contains 'clipboard') {
     $taskClipboardHelp=Invoke-StudioCli @('clipboard','read','--help','--language','en-US')
     $taskPasteHelp=Invoke-StudioCli @('clipboard','paste','--help','--language','zh-CN')

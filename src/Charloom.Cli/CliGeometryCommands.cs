@@ -25,6 +25,7 @@ public static partial class CliHost
                 case "geometry undo": await session.MoveGeometry(false, Token); break;
                 case "geometry redo": await session.MoveGeometry(true, Token); break;
                 case "geometry reset": await session.SetGeometry(new ImageGeometry(), Token); break;
+                case "geometry clear": await session.ClearGeometryHistory(Token); break;
                 default: throw new CliUsageException("Unknown geometry command.");
             }
             await Report(session.GeometrySummary());

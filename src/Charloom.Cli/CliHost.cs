@@ -18,7 +18,7 @@ public static partial class CliHost
         {
             args = CliArguments.Parse(raw);
             if (args.Flag("help") || args.Command.Length == 0 && !args.Flag("version")) { await output.WriteAsync(CliCatalog.Help(args)); return 0; }
-            if (args.Flag("version")) { await output.WriteLineAsync("1.0.0-alpha.6"); return 0; }
+            if (args.Flag("version")) { await output.WriteLineAsync("1.0.0-alpha.7"); return 0; }
             token.ThrowIfCancellationRequested();
             return await new Invocation(args, output, error, input, token, clipboard ?? new WindowsClipboardService()).Execute();
         }
@@ -179,7 +179,7 @@ public static partial class CliHost
                 case "batch image": return await Batch();
                 case "capabilities": await Report(new
                 {
-                    schema = 1, version = "1.0.0-alpha.6", status = "prerelease", commands = CliCatalog.Commands.Select(c => c.Name).ToArray(),
+                    schema = 1, version = "1.0.0-alpha.7", status = "prerelease", commands = CliCatalog.Commands.Select(c => c.Name).ToArray(),
                     complete = new[] { "image-quality-options", "image-geometry", "geometry-history", "figlet-layout", "system-text-raster", "ansi-sauce", "generators", "nine-export-formats", "text-tools", "all-existing-crypto-methods", "font-library", "current-settings", "settings-search-and-favorites", "GUI-zh-CN-en-US", "bounded-image-batch", "command-help", "persistent-edit-history", "unicode-edit-selections", "workspace-tabs-and-recovery", "explicit-tool-apply", "external-change-recovery", "candidate-result-management", "clipboard" },
                     pending = new[] { "viewport-selection-and-comparison", "recipes-and-platform-assistant", "code-variable-wrapping", "tutorial", "new-personalization-settings", "extended-motion", "localized-domain-errors" },
                     desktopParityComplete = false, formal100Authorized = false

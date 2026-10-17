@@ -64,6 +64,7 @@ Check 'Image page retains shared font and source controls' {
     UI invoke MoreButton | Out-Null
     UI invoke DisplaySettings | Out-Null
     UI wait-for ResultFont -t 3000 | Out-Null
+    UI wait-for SettingsDone -t 3000 | Out-Null
     UI invoke SettingsDone | Out-Null
 }
 Check 'Desktop settings remain usable' {
