@@ -1383,36 +1383,47 @@
             transparent 65%
         );
     }
-    .hero-copy {
-        animation: copy-arrive 700ms var(--ease-fluent) both;
+    .motion-letter {
+        display: inline-block;
     }
-    .hero-figure {
-        animation: preview-arrive 1000ms 100ms var(--ease-fluent) both;
+    .example-figure {
+        overflow: clip;
     }
-    .history-hero h1,
-    .history-hero > p {
-        animation: copy-arrive 650ms var(--ease-fluent) both;
+    .hero-copy h1 {
+        overflow: clip;
+        padding-block: 0.12em;
+        margin-block: -0.12em;
     }
-    .history-hero > p {
-        animation-delay: 90ms;
+    .motion-weave {
+        position: absolute;
+        z-index: -1;
+        top: 4%;
+        right: 0;
+        width: 56%;
+        height: 92%;
+        overflow: clip;
+        pointer-events: none;
+        color: var(--accent);
+        opacity: 0.12;
+        mask-image: radial-gradient(ellipse, black 10%, transparent 72%);
+        display: grid;
+        align-content: space-evenly;
+        font:
+            18px/1.5 "Cascadia Code",
+            Consolas,
+            monospace;
+        letter-spacing: 7px;
+        white-space: nowrap;
+    }
+    .motion-weave span {
+        transform: rotate(-12deg);
+    }
+    .motion-weave span:nth-child(even) {
+        opacity: 0.5;
     }
     .app-frame {
         position: relative;
         overflow: hidden;
-    }
-    .app-frame::after {
-        content: "";
-        position: absolute;
-        pointer-events: none;
-        inset: -50%;
-        background: linear-gradient(
-            110deg,
-            transparent 40%,
-            #ffffff24 49%,
-            transparent 58%
-        );
-        transform: translateX(65%);
-        animation: preview-light 1400ms 200ms var(--ease-fluent) both;
     }
     .button {
         transition:
@@ -1510,29 +1521,6 @@
         to {
             opacity: 1;
             transform: translateY(0);
-        }
-    }
-    @keyframes preview-arrive {
-        from {
-            opacity: 0;
-            transform: translateY(20px) scale(0.975);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
-    @keyframes preview-light {
-        from {
-            transform: translateX(-65%);
-            opacity: 0;
-        }
-        30% {
-            opacity: 1;
-        }
-        to {
-            transform: translateX(65%);
-            opacity: 0;
         }
     }
     @keyframes panel-open {
@@ -1830,6 +1818,9 @@
         }
     }
     @media (prefers-reduced-motion: reduce) {
+        .motion-weave {
+            display: none;
+        }
         .app-frame::after {
             display: none;
         }
@@ -1849,6 +1840,9 @@
         }
     }
     @media (forced-colors: active) {
+        .motion-weave {
+            display: none;
+        }
         .button,
         .app-frame,
         .example-figure,
