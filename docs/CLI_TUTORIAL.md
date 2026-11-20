@@ -1,6 +1,6 @@
 # Charloom 命令行详细教程
 
-适用版本：**1.0.0-alpha.7**，Windows x64／ARM64。教程使用 PowerShell。命令功能与参数以当前程序的 `--help` 为准；[覆盖表](CLI.md)列出尚未实现的桌面功能。
+适用版本：**1.0.0**，Windows x64／ARM64。教程使用 PowerShell。命令功能与参数以当前程序的 `--help` 为准；[覆盖表](CLI.md)列出尚未实现的桌面功能。
 
 ## 目录
 

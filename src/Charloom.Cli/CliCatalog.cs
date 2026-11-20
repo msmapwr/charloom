@@ -142,13 +142,13 @@ public static class CliCatalog
         new("clipboard read", "显式读取剪贴板，文本原样输出；图片保存PNG，不改项目", "Explicit clipboard read: exact text or PNG file; project unchanged", [Output, Overwrite, O("format", "NAME", "TXT（默认）或PNG；PNG必须指定output；文本8MB、PNG100MB/2亿像素", "TXT (default) or PNG; PNG requires output; text8MB, PNG100MB/200 million pixels")], "clipboard read --format PNG --output pasted.png", []),
         new("clipboard write", "将文本或项目当前编辑结果复制到系统剪贴板", "Copy text or the current project edit to the Windows clipboard", [.. TextInput], "clipboard write --project work.asciiproj", []),
         new("clipboard paste", "显式apply才粘贴到项目编辑状态；可撤销，原文件不自动保存", "Paste only with explicit apply; undoable sidecar edit, no automatic project save", [Project, Apply, Selection], "clipboard paste --project work.asciiproj --apply", []),
-        new("capabilities", "查询功能覆盖与本次预发布待办，不将待办伪装为支持", "Capability coverage and prerelease gaps; pending items are not advertised as supported", [], "capabilities --json", [])
+        new("capabilities", "查询功能覆盖与待办，不将待办伪装为支持", "Capability coverage and remaining gaps; pending items are not advertised as supported", [], "capabilities --json", [])
     ];
     public static IEnumerable<CliOption> AllOptions => GlobalOptions.Concat(Commands.SelectMany(c => c.Options)).DistinctBy(o => o.Name);
     public static bool Chinese(CliArguments args) => args.Get("language", "system") switch { "zh-CN" => true, "en-US" => false, _ => CultureInfo.CurrentUICulture.Name.StartsWith("zh", StringComparison.OrdinalIgnoreCase) };
     public static string Help(CliArguments args)
     {
-        var zh = Chinese(args); var b = new StringBuilder("Charloom CLI 1.0.0-alpha.7\n\n");
+        var zh = Chinese(args); var b = new StringBuilder("Charloom CLI 1.0.0\n\n");
         b.AppendLine(zh ? "字织 · 离线 ASCII / ANSI 字符艺术创作工具\n把字符织成画面\n" : "Offline ASCII / ANSI art studio\nWeave characters into art\n");
         var exact = Commands.FirstOrDefault(c => c.Name == args.Command);
         b.AppendLine(zh ? "用法：charloom-cli <命令> [选项]" : "Usage: charloom-cli <command> [options]");
@@ -180,8 +180,8 @@ public static class CliCatalog
         }
         b.AppendLine(zh ? "\n全局选项：" : "\nGlobal options:");
         foreach (var o in GlobalOptions) b.AppendLine($"  --{o.Name} {o.Value}\n      {(zh ? o.Chinese : o.English)}");
-        b.AppendLine(zh ? "\n退出码：0成功，2参数错误，3输入/转换失败，4文件IO或状态冲突，5批处理/恢复部分失败，130已取消。\n文本stdout不附加换行；错误写stderr。默认拒绝覆盖；Ctrl+C取消任务。\n输入上限：图片100MB/2亿源像素（处理图12000边/1600万像素；GIF首帧）、ANSI4MB、文本8MB；算法自身更小的限制仍生效。\n位图上限1亿像素/单边32767，HTML/SVG标记16000万字符。\n编辑历史最多100步/64MB，侧文件256MB；工作区32项目、恢复32项、最近15项。\n预发布：完整桌面功能映射、未实现项请查 capabilities 和 docs/CLI.md。"
-            : "\nExit codes: 0 success, 2 usage, 3 input/conversion, 4 file IO/state conflict, 5 partial batch/recovery failure, 130 canceled.\nText stdout adds no newline; errors go to stderr. No overwrite by default. Ctrl+C cancels.\nInput budgets: image100MB/200M source pixels (processing max12000 side/16M pixels; GIF first frame), ANSI4MB, text8MB; smaller algorithm limits still apply.\nBitmap100M pixels/max32767 per side; HTML/SVG160M markup chars.\nEdit history100 steps/64MB, sidecar256MB; workspace32 projects, recovery32, recent15.\nPrerelease: see capabilities and docs/CLI.md for full desktop parity tracking and gaps.");
+        b.AppendLine(zh ? "\n退出码：0成功，2参数错误，3输入/转换失败，4文件IO或状态冲突，5批处理/恢复部分失败，130已取消。\n文本stdout不附加换行；错误写stderr。默认拒绝覆盖；Ctrl+C取消任务。\n输入上限：图片100MB/2亿源像素（处理图12000边/1600万像素；GIF首帧）、ANSI4MB、文本8MB；算法自身更小的限制仍生效。\n位图上限1亿像素/单边32767，HTML/SVG标记16000万字符。\n编辑历史最多100步/64MB，侧文件256MB；工作区32项目、恢复32项、最近15项。\n功能覆盖：完整桌面功能映射、未实现项请查 capabilities 和 docs/CLI.md。"
+            : "\nExit codes: 0 success, 2 usage, 3 input/conversion, 4 file IO/state conflict, 5 partial batch/recovery failure, 130 canceled.\nText stdout adds no newline; errors go to stderr. No overwrite by default. Ctrl+C cancels.\nInput budgets: image100MB/200M source pixels (processing max12000 side/16M pixels; GIF first frame), ANSI4MB, text8MB; smaller algorithm limits still apply.\nBitmap100M pixels/max32767 per side; HTML/SVG160M markup chars.\nEdit history100 steps/64MB, sidecar256MB; workspace32 projects, recovery32, recent15.\nSee capabilities and docs/CLI.md for full desktop parity tracking and gaps.");
         return b.ToString();
     }
     public static string PropertyHelp(Type type, string name, bool zh)
